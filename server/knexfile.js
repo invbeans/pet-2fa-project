@@ -52,4 +52,5 @@ const settings = {
   
   };
   
-  module.exports = settings.development;
+  module.exports = require('knex')(settings.development);
+  //module.exports = settings.development;
