@@ -10,7 +10,8 @@ export const authConfig = {
             },
             async authorize(credentials) {
                 //разделим на логин ИЛИ почту И пароль
-                if (!credentials?.password || (!credentials?.email || !credentials?.username)) {
+                if (!credentials?.password || (!credentials?.email && !credentials?.username)) {
+                    console.log('падает на проверке полей')
                     return null;
                 }
 
@@ -23,28 +24,34 @@ export const authConfig = {
                 //checkUserExistsAndPasswordCorrect
 
                 //вернуть юзера с бэка
-                //options.body = {email: credentials?.email, username: credentials?.username, password: credentials?.password};
+
+                /*body: JSON.stringify({
+                        emaiL: credentials?.email,
+                        username: credentials?.username,
+                        password: credentials?.password
+                    }) */
+
                 const fetchHeaders = new Headers();
                 fetchHeaders.append('Content-Type', 'application/json');
-                //надо ли mode cors???
                 const options = {
                     headers: fetchHeaders,
-                    mode: 'cors'
+                    mode: 'cors',
+                    method: 'get',
+                    
                 };
-                //еще раз - БЕЗ ПАРОЛЯ СРАЗУ
-                const user = await fetch('http://localhost:3000/check_user' + new URLSearchParams({
-                    email: credentials?.email,
-                    username: credentials?.username,
-                    password: credentials?.password
-                }), options);
-
-                //вдруг тут улетит на json??
-                if (!user.ok || user.json() === undefined) {
+                const passwordParam = encodeURIComponent(credentials.password);
+                const usernameParam = encodeURIComponent(credentials.username) || '';
+                const emailParam = encodeURIComponent(credentials.email) || '';
+                const response = (await fetch(`http://localhost:8000/check_user?username=${usernameParam}&email=${emailParam}&password=${passwordParam}`, options));
+                const user = await response.json();
+                if (!user.username && !user.email) {
                     //если не вошел или ошибка
-                    return null
+                    return null;
                 }
-                console.log(user.json());
-                return user.json();
+                console.log(user);
+                //у объекта поле именно name
+                const userProfile = {name: user.username, email: user.email};
+                return userProfile;
             }
         })
     ]

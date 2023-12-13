@@ -5,8 +5,10 @@ const mainRouter = require('./routes/main.routes');
 const app = express();
 const PORT = 8000;
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+
 let corsOptions = {
-    origin: "http://localhost:4200",
+    origin: "http://localhost:3000",
     credentials: true
 };
 app.use(cors(corsOptions));

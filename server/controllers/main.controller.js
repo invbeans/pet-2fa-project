@@ -15,7 +15,7 @@ class mainController {
                 res.json('Пользователь с таким именем или почтой уже существует');
                 return;
             }
-            let hashedPassword = await bcrypt.hash(password, 3);
+            let hashedPassword = await bcrypt.hash(password, 10);
             const userData = await knex('user')
                 .returning(['id', 'username', 'email'])
                 .insert({ username, email, password: hashedPassword });
@@ -27,11 +27,11 @@ class mainController {
 
     async checkUserExistsAndPassword(req, res) {
         try {
-            const email = req.query.email;
-            const username = req.query.username;
-            const password = req.query.password;
+            //const { username, email, password } = req.body;
+            const [username, email, password] = [req.query.username, req.query.email, req.query.password];
+            console.log(username, email, password);
             let queryBuilder = knex.select('*');
-            if (email !== undefined) {
+            if (email !== '') {
                 queryBuilder.where('email', '=', email);
             } else {
                 queryBuilder.where('username', '=', username);
@@ -51,20 +51,17 @@ class mainController {
                 res.json('Неверный пароль');
                 return;
             }
-            const { hashedPassword, ...userData } = user;
+            const userData = {
+                id: user.id,
+                username: user.username,
+                email: user.email
+            }
+            console.log(userData)
             res.json(userData);
         } catch (error) {
+            console.log('падаем в еррор', error)
             res.json(error.message);
         }
-    }
-
-    //мб логин и логаут не нужны тк next-auth
-    async login(req, res) {
-        //TODO
-    }
-
-    async logout(req, res) {
-        //TODO
     }
 
     async addNewService(req, res) {
